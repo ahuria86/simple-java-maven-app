@@ -1,92 +1,46 @@
 package com.mycompany.app;
 
+package com.example.model;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Objects;
 
-public class Product {
+// Java Record (introduced in Java 16) for concise data carriers
+// Automatically provides equals(), hashCode(), toString(), and getters
+public record Product(
+    String productId,
+    String productName,
+    BigDecimal unitPrice, // Changed to BigDecimal for precise monetary calculations
+    int stockQuantity,
+    LocalDate manufacturingDate,
+    String category // New field added
+) {
 
-    private String id;
-    private String name;
-    private double price;
-    private int quantity;
-    private LocalDate manufacturingDate;
+    // You can add constructors, methods, and validations in records
+    // Compact constructor for validation (no explicit parameters)
+    public Product {
+        Objects.requireNonNull(productId, "Product ID cannot be null");
+        Objects.requireNonNull(productName, "Product name cannot be null");
+        Objects.requireNonNull(unitPrice, "Unit price cannot be null");
+        Objects.requireNonNull(manufacturingDate, "Manufacturing date cannot be null");
+        Objects.requireNonNull(category, "Category cannot be null");
 
-    public Product() {
+        if (stockQuantity < 0) {
+            throw new IllegalArgumentException("Stock quantity cannot be negative");
+        }
+        if (unitPrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Unit price cannot be negative");
+        }
     }
 
-    public Product(String id, String name, double price, int quantity, LocalDate manufacturingDate) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
-        this.quantity = quantity;
-        this.manufacturingDate = manufacturingDate;
+    // Example of a custom method in a record
+    public boolean isInStock() {
+        return this.stockQuantity > 0;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public void setPrice(double price) {
-        this.price = price;
-    }
-
-    public int getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public LocalDate getManufacturingDate() {
-        return manufacturingDate;
-    }
-
-    public void setManufacturingDate(LocalDate manufacturingDate) {
-        this.manufacturingDate = manufacturingDate;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Product product = (Product) o;
-        return Double.compare(price, product.price) == 0 &&
-               quantity == product.quantity &&
-               Objects.equals(id, product.id) &&
-               Objects.equals(name, product.name) &&
-               Objects.equals(manufacturingDate, product.manufacturingDate);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, price, quantity, manufacturingDate);
-    }
-
-    @Override
-    public String toString() {
-        return "Product{" +
-               "id='" + id + '\'' +
-               ", name='" + name + '\'' +
-               ", price=" + price +
-               ", quantity=" + quantity +
-               ", manufacturingDate=" + manufacturingDate +
-               '}';
+    // Example of a derived field (not stored, computed) - for demonstration
+    public int daysSinceManufacture() {
+        return (int) java.time.temporal.ChronoUnit.DAYS.between(manufacturingDate, LocalDate.now());
     }
 }
